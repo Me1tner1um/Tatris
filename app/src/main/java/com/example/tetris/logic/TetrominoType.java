@@ -46,5 +46,11 @@ public enum TetrominoType {
     }
 
     public int getId() { return id; }
-    public int[][] getShape() { return shape; }
+    public int[][] getShape() {
+        int[][] copy = new int[shape.length][];
+        for (int i = 0; i < shape.length; i++) {
+            copy[i] = shape[i].clone();
+        }
+        return copy;
+    }
 }

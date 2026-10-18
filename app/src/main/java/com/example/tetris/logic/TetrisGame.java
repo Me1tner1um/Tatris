@@ -11,8 +11,8 @@ public class TetrisGame {
     // Минимальный размер очереди фигур: гарантирует, что окно NEXT всегда есть что показывать
     private static final int MIN_QUEUE_SIZE = 7;
 
-    // Смещения Wall Kick: (0,0), (-1,0), (1,0), (0,-1), (-2,0), (2,0)
-    private static final int[][] KICK_OFFSETS = {{0, 0}, {-1, 0}, {1, 0}, {0, -1}, {-2, 0}, {2, 0}};
+    // Смещения Wall Kick: (0,0), (-1,0), (1,0), (-2,0), (2,0), (0,-1)
+    private static final int[][] KICK_OFFSETS = {{0, 0}, {-1, 0}, {1, 0}, {-2, 0}, {2, 0}, {0, -1}};
 
     private final Board board;
     private final LinkedList<TetrominoType> bag;
@@ -179,10 +179,15 @@ public class TetrisGame {
     }
 
     private void lockPiece() {
-        board.placeTetromino(currentPiece);
+        boolean placedAll = board.placeTetromino(currentPiece);
         int cleared = board.clearFullLines();
         if (cleared > 0) {
             updateScore(cleared);
+        }
+        // Если хотя бы один блок зафиксировался выше стакана — Lock Out (Game Over)
+        if (!placedAll) {
+            isGameOver = true;
+            return;
         }
         spawnNextPiece();
     }

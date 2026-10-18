@@ -26,9 +26,8 @@ public class InputHandler implements View.OnTouchListener {
     private static final float HARD_DROP_DISTANCE_DP = 31f;  // Дистанция свайпа вниз для мгновенного сброса
     private static final float SWIPE_UP_THRESHOLD_DP = 16f;  // Дистанция свайпа вверх для Hold
     private static final float TAP_MAX_DISTANCE_DP = 9f;     // Максимальный сдвиг пальца для тапа
-    private static final long TAP_MAX_TIME_MS = 220;         // Максимальная длительность тапа
-    // Палец, неподвижно удерживаемый дольше тапа, включает ускорение. Совпадение с TAP_MAX_TIME_MS исключает "серую зону"
-    private static final long SOFT_DROP_DELAY_MS = TAP_MAX_TIME_MS;
+    private static final long TAP_MAX_TIME_MS = 250;         // Максимальная длительность тапа
+    private static final long SOFT_DROP_DELAY_MS = 280;       // Задержка удержания для soft drop
 
     // Вертикальный свайп считается вертикальным, если вертикальный путь больше горизонтального в столько раз
     private static final float VERTICAL_DOMINANCE = 1.3f;
@@ -94,6 +93,7 @@ public class InputHandler implements View.OnTouchListener {
                 if (event.getPointerId(index) == activePointerId) {
                     handleUp(v, event.getX(index), event.getY(index),
                             event.getEventTime() - event.getDownTime());
+                    endSoftDrop();
                     activePointerId = NO_POINTER;
                 }
                 return true;
@@ -153,8 +153,7 @@ public class InputHandler implements View.OnTouchListener {
         }
 
         // 1. Мгновенный hard drop (свайп вниз). Проверяем первым, чтобы быстрый свайп срабатывал сразу
-        if (!isHorizontalMoved
-                && totalDeltaY >= hardDropDistancePx
+        if (totalDeltaY >= hardDropDistancePx
                 && totalDeltaY > Math.abs(totalDeltaX) * VERTICAL_DOMINANCE) {
             endSoftDrop();
             listener.onHardDrop();
@@ -164,8 +163,7 @@ public class InputHandler implements View.OnTouchListener {
 
         // 2. Мгновенный Hold (свайп вверх) с любого места экрана. Срабатывает сразу, как только набрана дистанция:
         // дуга большого пальца и пауза перед свайпом ему не мешают (после паузы ускорение просто выключается).
-        if (!isHorizontalMoved
-                && -totalDeltaY >= swipeUpThresholdPx
+        if (-totalDeltaY >= swipeUpThresholdPx
                 && -totalDeltaY > Math.abs(totalDeltaX) * VERTICAL_DOMINANCE) {
             endSoftDrop();
             listener.onHold();

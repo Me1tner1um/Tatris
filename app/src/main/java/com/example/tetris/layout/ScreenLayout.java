@@ -67,13 +67,18 @@ public final class ScreenLayout {
     public enum TapZone {
         HOLD,   // Верхняя левая часть: тап = Hold
         MENU,   // Кнопка меню
-        FIELD   // Всё остальное: тап = поворот
+        FIELD,  // Игровое поле: тап = поворот
+        NONE    // Окно NEXT или за пределами интерактивных зон: тап игнорируется
     }
 
     /** Определяет зону тапа по координатам мастер-экрана. */
     public static TapZone zoneAtMaster(float masterX, float masterY) {
         if (MENU_BUTTON.inflate(MENU_TAP_SLOP).contains(masterX, masterY)) {
             return TapZone.MENU;
+        }
+        // Окно NEXT: не должно приводить к повороту фигуры
+        if (NEXT_BOX.inflate(MENU_TAP_SLOP).contains(masterX, masterY)) {
+            return TapZone.NONE;
         }
         // Верхняя левая часть до верха поля, включая область над безопасной зоной: так проще попасть пальцем
         if (masterY < BOARD.top && masterX < MASTER_WIDTH / 2f) {

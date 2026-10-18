@@ -34,11 +34,12 @@ public class Board {
         return true;
     }
 
-    // Запекание фигуры в матрицу стакана
-    public void placeTetromino(Tetromino piece) {
+    // Запекание фигуры в матрицу стакана (возвращает true, если все блоки поместились на доске)
+    public boolean placeTetromino(Tetromino piece) {
         int[][] shape = piece.getShape();
         int px = piece.getX();
         int py = piece.getY();
+        boolean placedAll = true;
 
         for (int r = 0; r < shape.length; r++) {
             for (int c = 0; c < shape[r].length; c++) {
@@ -47,10 +48,13 @@ public class Board {
                     int boardX = px + c;
                     if (boardY >= 0 && boardY < HEIGHT && boardX >= 0 && boardX < WIDTH) {
                         grid[boardY][boardX] = piece.getType().getId();
+                    } else {
+                        placedAll = false;
                     }
                 }
             }
         }
+        return placedAll;
     }
 
     // Проверка и удаление заполненных рядов (возвращает количество сгоревших линий)

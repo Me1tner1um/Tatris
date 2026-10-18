@@ -74,11 +74,17 @@ public final class ScreenFlow {
             case PLAYING:
                 return pauseIfPlaying();
             case PAUSED:
-                screen = Screen.PLAYING;
-                return Effect.RESUME_GAME;
+                screen = Screen.MAIN_MENU;
+                return Effect.SHOW_MAIN_MENU;
             default:
                 return Effect.EXIT_APP;
         }
+    }
+
+    /** Системная кнопка "назад" при Game Over: возврат в главное меню. */
+    public Effect onGameOverBack() {
+        screen = Screen.MAIN_MENU;
+        return Effect.SHOW_MAIN_MENU;
     }
 
     private Effect pauseIfPlaying() {

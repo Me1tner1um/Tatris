@@ -30,13 +30,21 @@ public class GameThread extends Thread {
             // Логика обновляется независимо от того, удалось ли получить canvas
             gameView.update();
 
-            Canvas canvas = surfaceHolder.lockCanvas();
-            if (canvas != null) {
-                try {
+            Canvas canvas = null;
+            try {
+                canvas = surfaceHolder.lockCanvas();
+                if (canvas != null) {
                     gameView.render(canvas);
-                } finally {
-                    // Canvas обязательно возвращаем, даже если отрисовка упала с исключением
-                    surfaceHolder.unlockCanvasAndPost(canvas);
+                }
+            } catch (Exception e) {
+                // Surface might have been destroyed or become invalid
+            } finally {
+                if (canvas != null) {
+                    try {
+                        surfaceHolder.unlockCanvasAndPost(canvas);
+                    } catch (Exception e) {
+                        // Surface was released before unlock
+                    }
                 }
             }
 

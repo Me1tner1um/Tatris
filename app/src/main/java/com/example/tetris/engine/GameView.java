@@ -135,8 +135,14 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Inp
         this.exitHandler = exitHandler;
     }
 
-    // Системная кнопка или жест "назад": в игре ставит на паузу, на паузе продолжает, в главном меню закрывает приложение
+    // Системная кнопка или жест "назад": в игре ставит на паузу, на паузе или Game Over возвращает в меню, в главном меню закрывает приложение
     public void onBackPressed() {
+        synchronized (gameLock) {
+            if (isPlaying() && game.isGameOver()) {
+                navigate(ScreenFlow::onGameOverBack);
+                return;
+            }
+        }
         navigate(ScreenFlow::onBack);
     }
 
@@ -219,6 +225,9 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Inp
         if (clicked != null) {
             performClick();
             final ButtonId id = clicked;
+            if (id == ButtonId.SETTINGS) {
+                android.widget.Toast.makeText(getContext(), "Settings are coming soon", android.widget.Toast.LENGTH_SHORT).show();
+            }
             navigate(f -> f.onButton(id));
         }
         return true;
@@ -280,8 +289,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Inp
             case MENU:
                 navigate(ScreenFlow::onMenuButtonTap);
                 break;
-            default:
+            case FIELD:
                 rotate();
+                break;
+            default:
+                break;
         }
     }
 
@@ -405,17 +417,10 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Inp
         if (gameThread == null) return;
 
         gameThread.setRunning(false);
-        boolean interrupted = false;
-        while (true) {
-            try {
-                gameThread.join();
-                break;
-            } catch (InterruptedException e) {
-                interrupted = true;
-            }
-        }
-        if (interrupted) {
-            // Возвращаем флаг прерывания вызывающему коду
+        gameThread.interrupt();
+        try {
+            gameThread.join(500);
+        } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
         gameThread = null;
